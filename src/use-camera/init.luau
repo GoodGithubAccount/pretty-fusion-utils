@@ -1,26 +1,15 @@
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local Fusion = require("types/fusion")
-local lockValue = require("utils/lock-value")
-local useEventListener = require("use-event-listener")
+local Fusion = require(ReplicatedStorage.Packages.fusion) :: ModuleScript
 
-local onCameraChanged = Workspace:GetPropertyChangedSignal("CurrentCamera")
+local scope = Fusion.scoped(Fusion)
+local camera = scope:Value(Workspace.CurrentCamera)
 
---[=[
-  Returns a state object with the current camera. Updates when the current camera changes.
-  @param scope The scope to store cleanup tasks.
-  @return A state object with the current camera.
-]=]
-local function useCamera(scope: Fusion.FusionScope)
-  local camera = scope:Value(Workspace.CurrentCamera)
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+	if workspace.CurrentCamera then
+		camera:set(workspace.CurrentCamera)
+	end
+end)
 
-  useEventListener(scope, onCameraChanged, function()
-    if Workspace.CurrentCamera then
-      camera:set(Workspace.CurrentCamera)
-    end
-  end)
-
-  return lockValue(camera)
-end
-
-return useCamera
+return camera
